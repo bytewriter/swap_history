@@ -1,4 +1,10 @@
 #!/bin/bash
+# use sar to show swap history
+if [[ -z $(which sar 2>/dev/null) ]];then
+    echo -e "Missing sar\ndnf install sysstat ?"
+    echo -e "\ninstalling sysstat now will means there will be no history"
+    exit 1
+fi
 echo "--------- $(hostname -s) ----------"
 for x in {29..0};do
     Month="$(date -d now-${x}days +%b)"
