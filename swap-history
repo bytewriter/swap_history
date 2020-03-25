@@ -1,0 +1,26 @@
+#!/bin/bash
+echo "--------- $(hostname -s) ----------"
+for x in {29..0};do
+    Month="$(date -d now-${x}days +%b)"
+    Day="$(date -d now-${x}days +%d)"
+    sarfile=/var/log/sa/sa$Day
+    if [[ -r $sarfile ]];then
+        while read;do
+            parts=($REPLY)
+            if [[ $last != ${parts[3]} ]];then
+                last="${parts[3]}"
+                if [[ -z $changes ]];then
+                    let changes=0
+                    echo "$Month $Day ${parts[0]} ${parts[1]} Swap: ${parts[3]}"
+                    lmo="$Month"
+                    ldy="$Day"
+                else
+                    let "changes+=1"
+                    [[ $lmo == $Month ]] && [[ $ldy == $Day ]] && echo -n "       " || { echo -n "$Month $Day ";lmo="$Month";ldy="$Day"; }
+                    echo "${parts[0]} ${parts[1]} Swap: ${parts[3]}"
+                fi
+            fi
+    done < <(sar -S -f $sarfile|grep -i -E -v 'linux|^$|kbswpused|Average')
+    fi
+done
+echo "Total swap changes on $(hostname -s): $changes"
